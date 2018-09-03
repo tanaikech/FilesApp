@@ -118,7 +118,7 @@ function createTree(folderId, mimeType, fields) {
         return (c = function(folder, folderName, folderSt, res) {
           var ar, arrayFolderSt;
           ar = folderList.filter(function(e) {
-            return e.parents[0] === folder;
+            return e.parents && e.parents[0] === folder;
           });
           folderSt += folderName + "#_foohoge_#" + folder + "#_aabbccddee_#";
           arrayFolderSt = folderSt.split("#_aabbccddee_#");

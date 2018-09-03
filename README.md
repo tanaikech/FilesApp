@@ -266,5 +266,10 @@ If you have any questions and commissions for me, feel free to tell me.
 
     1. Initial release.
 
+* v1.0.1 (September 3, 2018)
+
+    1. Removed a bug.
+        - When there are files and folders without the parents, an error occurred. In this version, this issue was removed.
+
 
 [TOP](#TOP)
