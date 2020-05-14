@@ -5,10 +5,11 @@
  * @param {String} folderId folderId.
  * @param {Object} mimeType One dimensional Array including mimeType you want to retrieve.
  * @param {String} fields fields which can be used at drive.files.list.
+ * @param {Object} options This is used for the shared drive.
  * @return {Object} Return Object
  */
-function getFilesAndFoldersInFolder(folderId, mimeType, fields) {
-  var fa = new FilesApp();
+function getFilesAndFoldersInFolder(folderId, mimeType, fields, options) {
+  var fa = new FilesApp(options);
   return fa.getFilesAndFoldersInFolder(folderId, mimeType, fields);
 }
 
@@ -16,10 +17,11 @@ function getFilesAndFoldersInFolder(folderId, mimeType, fields) {
  * getAllFoldersInFolder method for FilesApp.<br>
  * - Retrieve all folders of all level under folderId.
  * @param {string} folderId folderId
+ * @param {Object} options This is used for the shared drive.
  * @return {Object} Return Object
  */
-function getAllFoldersInFolder(folderId) {
-  var fa = new FilesApp();
+function getAllFoldersInFolder(folderId, options) {
+  var fa = new FilesApp(options);
   return fa.getAllFoldersInFolder(folderId);
 }
 
@@ -29,10 +31,11 @@ function getAllFoldersInFolder(folderId) {
  * @param {string} folderId folderId
  * @param {Object} mimeType One dimensional Array including mimeType you want to retrieve.
  * @param {String} fields fields which can be used at drive.files.list.
+ * @param {Object} options This is used for the shared drive.
  * @return {Object} Return Object
  */
-function getAllInFolder(folderId, mimeType, fields) {
-  var fa = new FilesApp();
+function getAllInFolder(folderId, mimeType, fields, options) {
+  var fa = new FilesApp(options);
   return fa.getAllInFolder(folderId, mimeType, fields);
 }
 
@@ -42,76 +45,90 @@ function getAllInFolder(folderId, mimeType, fields) {
  * @param {string} folderId Retrieve all folders of all level under folderId.
  * @param {Object} mimeType One dimensional Array including mimeType you want to retrieve.
  * @param {String} fields fields which can be used at drive.files.list.
+ * @param {Object} options This is used for the shared drive.
  * @return {Object} Return Object
  */
-function createTree(folderId, mimeType, fields) {
-  var fa = new FilesApp();
+function createTree(folderId, mimeType, fields, options) {
+  var fa = new FilesApp(options);
   return fa.createTree(folderId, mimeType, fields);
 }
+
+// DriveApp.createFile(); // This is used for automatically enabling Drive API and detecting the scope for using Drive API by the script editor.
 ;
+
 (function(r) {
   var FilesApp;
   FilesApp = (function() {
-    var checkFields, createBatchRequests, createQ, createRequests, getAllFoldersInFolderMain, getFilesByAPIByFetchAll, getFilesByAPIByFetchAllforNoBatch, getFilesByAPIInit, getFilesInFolder, getQueryFromMimeTypes, getRoot, objToQueryParams, parseFilesByFolderList, parseResFromBatchRequests, singleReq;
+    var checkFields, createBatchRequests, createQ, createRequests, getAllFoldersInFolderMain, getFilesByAPIByFetchAll, getFilesByAPIByFetchAllforNoBatch, getFilesByAPIInit, getFilesInFolder, getQueryFromMimeTypes, getRoot, idToName, objToQueryParams, parseFilesByFolderList, parseResFromBatchRequests, singleReq;
+
+    class FilesApp {
+      constructor(o_) {
+        this.url = "https://www.googleapis.com/drive/v3/files";
+        this.fields = "";
+        this.pageSize = 1000;
+        this.headers = {
+          Authorization: 'Bearer ' + ScriptApp.getOAuthToken()
+        };
+        this.maxSearchFolders = 20;
+        this.maxBatchRequests = 100;
+        this.additionalQuery = "includeItemsFromAllDrives=true&supportsAllDrives=true";
+        if (o_ && "driveId" in o_ && o_.driveId !== "") {
+          this.additionalQuery += "&corpora=drive&driveId=" + o_.driveId;
+        }
+      }
+
+      // ----- begin main methods
+      getFilesAndFoldersInFolder(parent, mimeTypeList, fields) {
+        var mtlq, query;
+        if (!parent || parent === "") {
+          throw new Error("Folder ID was not found.");
+        }
+        mtlq = getQueryFromMimeTypes.call(this, mimeTypeList);
+        parent = parent === "root" ? getRoot.call(this) : parent;
+        query = {
+          maxResults: this.pageSize,
+          q: mtlq !== "" ? "'" + parent + "' in parents" + " and " + mtlq + " and trashed=false" : "'" + parent + "' in parents and trashed=false",
+          fields: fields
+        };
+        return singleReq.call(this, query);
+      }
+
+      getAllFoldersInFolder(parent) {
+        var allFolders, query;
+        if (!parent || parent === "") {
+          throw new Error("Folder ID was not found.");
+        }
+        parent = parent === "root" ? getRoot.call(this) : parent;
+        query = {
+          pageSize: this.pageSize,
+          q: "mimeType='application/vnd.google-apps.folder'",
+          fields: "files(id,name,parents),nextPageToken"
+        };
+        allFolders = singleReq.call(this, query);
+        return getAllFoldersInFolderMain.call(this, parent, DriveApp.getFileById(parent).getName(), allFolders);
+      }
+
+      getAllInFolder(parent, mimeTypes, fields) {
+        var folderList;
+        this.fields = fields;
+        folderList = this.getAllFoldersInFolder(parent);
+        return getFilesInFolder.call(this, folderList.id, mimeTypes);
+      }
+
+      createTree(parent, mimeTypes, fields) {
+        var allFiles, folderList;
+        folderList = this.getAllFoldersInFolder(parent);
+        this.fields = checkFields.call(this, fields);
+        allFiles = getFilesInFolder.call(this, folderList.id, mimeTypes);
+        return parseFilesByFolderList.call(this, allFiles, folderList);
+      }
+
+    };
 
     FilesApp.name = "FilesApp";
+    // ----- end main methods
 
-    function FilesApp() {
-      this.url = "https://www.googleapis.com/drive/v3/files";
-      this.fields = "";
-      this.pageSize = 1000;
-      this.headers = {
-        Authorization: 'Bearer ' + ScriptApp.getOAuthToken()
-      };
-      this.maxSearchFolders = 20;
-      this.maxBatchRequests = 100;
-    }
-
-    FilesApp.prototype.getFilesAndFoldersInFolder = function(parent, mimeTypeList, fields) {
-      var mtlq, query;
-      if (!parent || parent === "") {
-        throw new Error("Folder ID was not found.");
-      }
-      mtlq = getQueryFromMimeTypes.call(this, mimeTypeList);
-      parent = parent === "root" ? getRoot.call(this) : parent;
-      query = {
-        maxResults: this.pageSize,
-        q: mtlq !== "" ? "'" + parent + "' in parents" + " and " + mtlq + " and trashed=false" : "'" + parent + "' in parents and trashed=false",
-        fields: fields
-      };
-      return singleReq.call(this, query);
-    };
-
-    FilesApp.prototype.getAllFoldersInFolder = function(parent) {
-      var allFolders, query;
-      if (!parent || parent === "") {
-        throw new Error("Folder ID was not found.");
-      }
-      parent = parent === "root" ? getRoot.call(this) : parent;
-      query = {
-        pageSize: this.pageSize,
-        q: "mimeType='application/vnd.google-apps.folder'",
-        fields: "files(id,name,parents),nextPageToken"
-      };
-      allFolders = singleReq.call(this, query);
-      return getAllFoldersInFolderMain.call(this, parent, DriveApp.getFileById(parent).getName(), allFolders);
-    };
-
-    FilesApp.prototype.getAllInFolder = function(parent, mimeTypes, fields) {
-      var folderList;
-      this.fields = fields;
-      folderList = this.getAllFoldersInFolder(parent);
-      return getFilesInFolder.call(this, folderList.id, mimeTypes);
-    };
-
-    FilesApp.prototype.createTree = function(parent, mimeTypes, fields) {
-      var allFiles, folderList;
-      folderList = this.getAllFoldersInFolder(parent);
-      this.fields = checkFields.call(this, fields);
-      allFiles = getFilesInFolder.call(this, folderList.id, mimeTypes);
-      return parseFilesByFolderList.call(this, allFiles, folderList);
-    };
-
+    // ----- Tool
     getAllFoldersInFolderMain = function(folderId, folderName, folderList) {
       return (function() {
         var c;
@@ -155,7 +172,7 @@ function createTree(folderId, mimeType, fields) {
       if (folLen > this.maxSearchFolders) {
         sep = Math.floor(folLen / this.maxSearchFolders);
         sep = folLen % this.maxSearchFolders > 0 ? sep + 1 : sep;
-        for (i = k = 0, ref = sep; 0 <= ref ? k < ref : k > ref; i = 0 <= ref ? ++k : --k) {
+        for (i = k = 0, ref = sep; (0 <= ref ? k < ref : k > ref); i = 0 <= ref ? ++k : --k) {
           offset = i * this.maxSearchFolders;
           qs.push(createQ(fl.slice(offset, offset + this.maxSearchFolders), mtlq));
         }
@@ -179,7 +196,7 @@ function createTree(folderId, mimeType, fields) {
       } else {
         sep = Math.floor(urlsLen / this.maxBatchRequests);
         sep = urlsLen % this.maxBatchRequests > 0 ? sep + 1 : sep;
-        for (i = k = 0, ref = sep; 0 <= ref ? k < ref : k > ref; i = 0 <= ref ? ++k : --k) {
+        for (i = k = 0, ref = sep; (0 <= ref ? k < ref : k > ref); i = 0 <= ref ? ++k : --k) {
           offset = i * this.maxBatchRequests;
           urlss = urls.slice(offset, offset + this.maxBatchRequests);
           urlBk.push(urlss);
@@ -191,17 +208,15 @@ function createTree(folderId, mimeType, fields) {
     };
 
     getFilesByAPIInit = function(qs) {
-      return qs.map((function(_this) {
-        return function(q) {
-          var query;
-          query = {
-            pageSize: _this.pageSize,
-            q: q,
-            fields: _this.fields
-          };
-          return _this.url + "?" + (objToQueryParams.call(_this, query));
+      return qs.map((q) => {
+        var query;
+        query = {
+          pageSize: this.pageSize,
+          q: q,
+          fields: this.fields
         };
-      })(this));
+        return this.url + "?" + (objToQueryParams.call(this, query)) + "&" + this.additionalQuery;
+      });
     };
 
     singleReq = function(query) {
@@ -209,7 +224,7 @@ function createTree(folderId, mimeType, fields) {
       params = objToQueryParams.call(this, query);
       req = {
         method: "get",
-        url: this.url + "?" + params,
+        url: this.url + "?" + params + "&" + this.additionalQuery,
         headers: this.headers,
         muteHttpExceptions: true
       };
@@ -299,7 +314,7 @@ function createTree(folderId, mimeType, fields) {
     };
 
     getRoot = function() {
-      return DriveApp.getRootFolder().getId();
+      return idToName.call(this, "root");
     };
 
     createQ = function(fl, mtlq) {
@@ -425,8 +440,24 @@ function createTree(folderId, mimeType, fields) {
       });
     };
 
+    idToName = function(id) {
+      var req, res;
+      req = {
+        method: "get",
+        url: this.url + "/" + id + "?" + this.additionalQuery,
+        headers: this.headers,
+        muteHttpExceptions: true
+      };
+      res = UrlFetchApp.fetchAll([req]);
+      if (res[0].getResponseCode() !== 200) {
+        throw new Error("Errors occurred. ErrorMessage: " + res[0].getContentText());
+        return;
+      }
+      return JSON.parse(res[0].getContentText()).id;
+    };
+
     return FilesApp;
 
-  })();
+  }).call(this);
   return r.FilesApp = FilesApp;
 })(this);
