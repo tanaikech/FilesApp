@@ -5,11 +5,10 @@
  * @param {String} folderId folderId.
  * @param {Object} mimeType One dimensional Array including mimeType you want to retrieve.
  * @param {String} fields fields which can be used at drive.files.list.
- * @param {Object} options This is used for the shared drive.
  * @return {Object} Return Object
  */
-function getFilesAndFoldersInFolder(folderId, mimeType, fields, options) {
-  var fa = new FilesApp(options);
+function getFilesAndFoldersInFolder(folderId, mimeType, fields) {
+  var fa = new FilesApp();
   return fa.getFilesAndFoldersInFolder(folderId, mimeType, fields);
 }
 
@@ -17,11 +16,10 @@ function getFilesAndFoldersInFolder(folderId, mimeType, fields, options) {
  * getAllFoldersInFolder method for FilesApp.<br>
  * - Retrieve all folders of all level under folderId.
  * @param {string} folderId folderId
- * @param {Object} options This is used for the shared drive.
  * @return {Object} Return Object
  */
-function getAllFoldersInFolder(folderId, options) {
-  var fa = new FilesApp(options);
+function getAllFoldersInFolder(folderId) {
+  var fa = new FilesApp();
   return fa.getAllFoldersInFolder(folderId);
 }
 
@@ -31,11 +29,10 @@ function getAllFoldersInFolder(folderId, options) {
  * @param {string} folderId folderId
  * @param {Object} mimeType One dimensional Array including mimeType you want to retrieve.
  * @param {String} fields fields which can be used at drive.files.list.
- * @param {Object} options This is used for the shared drive.
  * @return {Object} Return Object
  */
-function getAllInFolder(folderId, mimeType, fields, options) {
-  var fa = new FilesApp(options);
+function getAllInFolder(folderId, mimeType, fields) {
+  var fa = new FilesApp();
   return fa.getAllInFolder(folderId, mimeType, fields);
 }
 
@@ -45,16 +42,14 @@ function getAllInFolder(folderId, mimeType, fields, options) {
  * @param {string} folderId Retrieve all folders of all level under folderId.
  * @param {Object} mimeType One dimensional Array including mimeType you want to retrieve.
  * @param {String} fields fields which can be used at drive.files.list.
- * @param {Object} options This is used for the shared drive.
  * @return {Object} Return Object
  */
-function createTree(folderId, mimeType, fields, options) {
-  var fa = new FilesApp(options);
+function createTree(folderId, mimeType, fields) {
+  var fa = new FilesApp();
   return fa.createTree(folderId, mimeType, fields);
 }
 
 // DriveApp.createFile(); // This is used for automatically enabling Drive API and detecting the scope for using Drive API by the script editor.
-;
 
 (function(r) {
   var FilesApp;
@@ -72,12 +67,9 @@ function createTree(folderId, mimeType, fields, options) {
         this.maxSearchFolders = 20;
         this.maxBatchRequests = 100;
         this.additionalQuery = "includeItemsFromAllDrives=true&supportsAllDrives=true";
-        if (o_ && "driveId" in o_ && o_.driveId !== "") {
-          this.additionalQuery += "&corpora=drive&driveId=" + o_.driveId;
-        }
       }
 
-      // ----- begin main methods
+        // ----- begin main methods
       getFilesAndFoldersInFolder(parent, mimeTypeList, fields) {
         var mtlq, query;
         if (!parent || parent === "") {

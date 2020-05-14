@@ -47,12 +47,12 @@ In order to use this library, please install this as a library.
 
 There are 4 methods in this library.
 
-| Method                                                          | Description                                                                                                                                     |
-| :-------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
-| createTree(folderId, mimeType, fields, options)                 | Create a file and folder tree. Retrieve all folders of all level under folderId. All files and folders are included in an array with the level. |
-| getAllInFolder(folderId, mimeType, fields, options)             | Retrieve all files and folders of all level under folderId. All files and folders are included in an array without the level.                   |
-| getAllFoldersInFolder(folderId, options)                        | Retrieve all folders of all level under folderId.                                                                                               |
-| getFilesAndFoldersInFolder(folderId, mimeType, fields, options) | Retrieve files and folders just under a folder with folderId.                                                                                   |
+| Method                                                 | Description                                                                                                                                     |
+| :----------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+| createTree(folderId, mimeType, fields)                 | Create a file and folder tree. Retrieve all folders of all level under folderId. All files and folders are included in an array with the level. |
+| getAllInFolder(folderId, mimeType, fields)             | Retrieve all files and folders of all level under folderId. All files and folders are included in an array without the level.                   |
+| getAllFoldersInFolder(folderId)                        | Retrieve all folders of all level under folderId.                                                                                               |
+| getFilesAndFoldersInFolder(folderId, mimeType, fields) | Retrieve files and folders just under a folder with folderId.                                                                                   |
 
 #### Arguments
 
@@ -62,7 +62,6 @@ There are 4 methods in this library.
   - If you use `null` for this, all kinds of files are retrieved.
 - **fields** : fields of files you want to retrieve. Please use as a string. This value is the same to `fields` which is used at [files.list of Drive API](https://developers.google.com/drive/api/v3/reference/files/list).
   - If you want to retrieve the filename and ID of files, you can use `"files(id,name)"`
-- **options** : You can input the Drive ID like `{driveId: "###"}`. Even when you don't use this, this library retrieves the file list from your Google Drive and all shared Drives. If you use this, the file list is retrieved from your Google Drive and the shared drive you want to retrieve.
 
 # Samples
 
@@ -70,7 +69,7 @@ In order to explain the following sample script, it supposes that there is this 
 
 ![](images/fig1.png)
 
-## 1. createTree(folderId, mimeType, fields, options)
+## 1. createTree(folderId, mimeType, fields)
 
 `folderId` is the ID of "sampleFolder1". In this sample, the filenames of files with all mimeTypes are retrieved.
 
@@ -221,7 +220,7 @@ The index of the array of `folderTreeById` and `folderTreeByName` is correspondi
 }
 ```
 
-## 2. getAllInFolder(folderId, mimeType, fields, options)
+## 2. getAllInFolder(folderId, mimeType, fields)
 
 ```javascript
 var res = FilesApp.getAllInFolder(folderId, null, "files(name)");
@@ -247,7 +246,7 @@ All files and folders in a folder you set are retrieved. But it is not as a tree
 ]
 ```
 
-## 3. getAllFoldersInFolder(folderId, options)
+## 3. getAllFoldersInFolder(folderId)
 
 ```javascript
 var res = FilesApp.getAllFoldersInFolder(folderId);
@@ -302,7 +301,7 @@ All folders in a folder you set are retrieved as a tree.
 }
 ```
 
-## 4. getFilesAndFoldersInFolder(folderId, mimeType, fields, options)
+## 4. getFilesAndFoldersInFolder(folderId, mimeType, fields)
 
 ```javascript
 var res = FilesApp.getFilesAndFoldersInFolder(folderId, null, "files(name)");
@@ -355,5 +354,9 @@ If you have any questions and commissions for me, feel free to tell me.
      1. V8 is used.
      1. As the default setting, the file list is retrieved from both your Google Drive and the shared drive.
         - By this, for example, when the folder ID in the shared Drive is used to `###` of `const res = FilesApp.createTree("###")`, the folder tree of the shared Drive is retrieved, if you have the shared Drive.
+
+- v1.1.1 (May 14, 2020)
+
+  1. `options` was removed. Because in this library, the file list is retrieved under the specific folder, and this library doesn't directly search the specific files.
 
 [TOP](#TOP)
