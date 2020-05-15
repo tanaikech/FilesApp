@@ -7,7 +7,7 @@
 
 # Overview
 
-**FilesApp is a GAS library for retrieving file and folder list in Google Drive using Google Apps Script (GAS). Also this can create a tree from all files and folders in Google Drive.**
+**FilesApp is a GAS library for retrieving file and folder list in Google Drive using Google Apps Script (GAS). Also this can create a tree from all files and folders in own Google Drive and shared Drives.**
 
 <a name="Description"></a>
 
@@ -318,6 +318,16 @@ All files and folders just under a folder you set are retrieved.
   { "name": "sampleFolder_2a" }
 ]
 ```
+
+# For other languages
+
+As the libraries "GetFileList" for other languages, there are following libraries.
+
+- Golang: [https://github.com/tanaikech/go-getfilelist](https://github.com/tanaikech/go-getfilelist)
+- Google Apps Script: [https://github.com/tanaikech/FilesApp](https://github.com/tanaikech/FilesApp)
+- Javascript: [https://github.com/tanaikech/GetFileList_js](https://github.com/tanaikech/GetFileList_js)
+- Node.js: [https://github.com/tanaikech/node-getfilelist](https://github.com/tanaikech/node-getfilelist)
+- Python: [https://github.com/tanaikech/getfilelistpy](https://github.com/tanaikech/getfilelistpy)
 
 ---
 
