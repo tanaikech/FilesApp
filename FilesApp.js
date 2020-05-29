@@ -50,11 +50,12 @@ function createTree(folderId, mimeType, fields) {
 }
 
 // DriveApp.createFile(); // This is used for automatically enabling Drive API and detecting the scope for using Drive API by the script editor.
+;
 
 (function(r) {
   var FilesApp;
   FilesApp = (function() {
-    var checkFields, createBatchRequests, createQ, createRequests, getAllFoldersInFolderMain, getFilesByAPIByFetchAll, getFilesByAPIByFetchAllforNoBatch, getFilesByAPIInit, getFilesInFolder, getQueryFromMimeTypes, getRoot, idToName, objToQueryParams, parseFilesByFolderList, parseResFromBatchRequests, singleReq;
+    var checkFields, createBatchRequests, createQ, createRequests, getAllFoldersInFolderMain, getDriveId, getFilesByAPIByFetchAll, getFilesByAPIByFetchAllforNoBatch, getFilesByAPIInit, getFilesInFolder, getQueryFromMimeTypes, getRoot, idToName, objToQueryParams, parseFilesByFolderList, parseResFromBatchRequests, singleReq;
 
     class FilesApp {
       constructor(o_) {
@@ -67,9 +68,10 @@ function createTree(folderId, mimeType, fields) {
         this.maxSearchFolders = 20;
         this.maxBatchRequests = 100;
         this.additionalQuery = "includeItemsFromAllDrives=true&supportsAllDrives=true";
+        this.sharedDriveId = "";
       }
 
-        // ----- begin main methods
+      // ----- begin main methods
       getFilesAndFoldersInFolder(parent, mimeTypeList, fields) {
         var mtlq, query;
         if (!parent || parent === "") {
@@ -82,6 +84,12 @@ function createTree(folderId, mimeType, fields) {
           q: mtlq !== "" ? "'" + parent + "' in parents" + " and " + mtlq + " and trashed=false" : "'" + parent + "' in parents and trashed=false",
           fields: fields
         };
+        this.sharedDriveId = getDriveId.call(this, parent);
+        if (this.sharedDriveId) {
+          query.corpora = "drive";
+          query.driveId = this.sharedDriveId;
+          this.additionalQuery += "&corpora=drive&driveId=" + this.sharedDriveId;
+        }
         return singleReq.call(this, query);
       }
 
@@ -96,8 +104,14 @@ function createTree(folderId, mimeType, fields) {
           q: "mimeType='application/vnd.google-apps.folder'",
           fields: "files(id,name,parents),nextPageToken"
         };
+        this.sharedDriveId = getDriveId.call(this, parent);
+        if (this.sharedDriveId) {
+          query.corpora = "drive";
+          query.driveId = this.sharedDriveId;
+          this.additionalQuery += "&corpora=drive&driveId=" + this.sharedDriveId;
+        }
         allFolders = singleReq.call(this, query);
-        return getAllFoldersInFolderMain.call(this, parent, DriveApp.getFileById(parent).getName(), allFolders);
+        return getAllFoldersInFolderMain.call(this, parent, idToName.call(this, parent, "name"), allFolders);
       }
 
       getAllInFolder(parent, mimeTypes, fields) {
@@ -118,6 +132,7 @@ function createTree(folderId, mimeType, fields) {
     };
 
     FilesApp.name = "FilesApp";
+
     // ----- end main methods
 
     // ----- Tool
@@ -166,10 +181,10 @@ function createTree(folderId, mimeType, fields) {
         sep = folLen % this.maxSearchFolders > 0 ? sep + 1 : sep;
         for (i = k = 0, ref = sep; (0 <= ref ? k < ref : k > ref); i = 0 <= ref ? ++k : --k) {
           offset = i * this.maxSearchFolders;
-          qs.push(createQ(fl.slice(offset, offset + this.maxSearchFolders), mtlq));
+          qs.push(createQ.call(this, fl.slice(offset, offset + this.maxSearchFolders), mtlq));
         }
       } else {
-        qs.push(createQ(fl, mtlq));
+        qs.push(createQ.call(this, fl, mtlq));
       }
       urls = getFilesByAPIInit.call(this, qs);
       rq = createRequests.call(this, urls);
@@ -300,13 +315,13 @@ function createTree(folderId, mimeType, fields) {
           }
           return req[0];
         });
-        getFilesByAPIByFetchAll.call(this, reqss, fileList);
+        getFilesByAPIByFetchAllforNoBatch.call(this, reqss, fileList);
       }
       return fileList;
     };
 
     getRoot = function() {
-      return idToName.call(this, "root");
+      return idToName.call(this, "root", "id");
     };
 
     createQ = function(fl, mtlq) {
@@ -432,7 +447,7 @@ function createTree(folderId, mimeType, fields) {
       });
     };
 
-    idToName = function(id) {
+    idToName = function(id, prop) {
       var req, res;
       req = {
         method: "get",
@@ -445,7 +460,23 @@ function createTree(folderId, mimeType, fields) {
         throw new Error("Errors occurred. ErrorMessage: " + res[0].getContentText());
         return;
       }
-      return JSON.parse(res[0].getContentText()).id;
+      return JSON.parse(res[0].getContentText())[prop];
+    };
+
+    getDriveId = function(id) {
+      var req, res;
+      req = {
+        method: "get",
+        url: this.url + "/" + id + "?" + this.additionalQuery,
+        headers: this.headers,
+        muteHttpExceptions: true
+      };
+      res = UrlFetchApp.fetchAll([req]);
+      if (res[0].getResponseCode() !== 200) {
+        throw new Error("Errors occurred. ErrorMessage: " + res[0].getContentText());
+        return;
+      }
+      return JSON.parse(res[0].getContentText()).driveId || "";
     };
 
     return FilesApp;

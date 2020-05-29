@@ -369,4 +369,8 @@ If you have any questions and commissions for me, feel free to tell me.
 
   1. `options` was removed. Because in this library, the file list is retrieved under the specific folder, and this library doesn't directly search the specific files.
 
+- v1.1.2 (May 29, 2020)
+
+  1. A bug that all files were not retrieved from the shared drive was removed.
+
 [TOP](#TOP)
