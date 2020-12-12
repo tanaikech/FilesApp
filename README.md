@@ -1,6 +1,6 @@
 # FilesApp
 
-<a name="TOP"></a>
+<a name="top"></a>
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENCE)
 
 <a name="Overview"></a>
@@ -47,12 +47,12 @@ In order to use this library, please install this as a library.
 
 There are 4 methods in this library.
 
-| Method                                                 | Description                                                                                                                                     |
-| :----------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
-| createTree(folderId, mimeType, fields)                 | Create a file and folder tree. Retrieve all folders of all level under folderId. All files and folders are included in an array with the level. |
-| getAllInFolder(folderId, mimeType, fields)             | Retrieve all files and folders of all level under folderId. All files and folders are included in an array without the level.                   |
-| getAllFoldersInFolder(folderId)                        | Retrieve all folders of all level under folderId.                                                                                               |
-| getFilesAndFoldersInFolder(folderId, mimeType, fields) | Retrieve files and folders just under a folder with folderId.                                                                                   |
+| Method                                                              | Description                                                                                                                                     |
+| :------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+| createTree(folderId, mimeType, fields, accessToken)                 | Create a file and folder tree. Retrieve all folders of all level under folderId. All files and folders are included in an array with the level. |
+| getAllInFolder(folderId, mimeType, fields, accessToken)             | Retrieve all files and folders of all level under folderId. All files and folders are included in an array without the level.                   |
+| getAllFoldersInFolder(folderId, accessToken)                        | Retrieve all folders of all level under folderId.                                                                                               |
+| getFilesAndFoldersInFolder(folderId, mimeType, fields, accessToken) | Retrieve files and folders just under a folder with folderId.                                                                                   |
 
 #### Arguments
 
@@ -62,6 +62,7 @@ There are 4 methods in this library.
   - If you use `null` for this, all kinds of files are retrieved.
 - **fields** : fields of files you want to retrieve. Please use as a string. This value is the same to `fields` which is used at [files.list of Drive API](https://developers.google.com/drive/api/v3/reference/files/list).
   - If you want to retrieve the filename and ID of files, you can use `"files(id,name)"`
+- **accessToken** : When you want to give the access token except for `ScriptApp.getOAuthToken()`, please use this. When this is not used, `ScriptApp.getOAuthToken()` is used as the default access token. For example, when this is used, the file list in Drive of the service account can be retrieved.
 
 # Samples
 
@@ -373,4 +374,8 @@ If you have any questions and commissions for me, feel free to tell me.
 
   1. A bug that all files were not retrieved from the shared drive was removed.
 
-[TOP](#TOP)
+- v1.1.3 (December 12, 2020)
+
+  1. Access token got to be able to be given as an argument. When the access token is not given as the argument, `ScriptApp.getOAuthToken()` is used as the default access token. By this, the service account can be used.
+
+[TOP](#top)
