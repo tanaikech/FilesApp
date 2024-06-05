@@ -378,4 +378,8 @@ If you have any questions and commissions for me, feel free to tell me.
 
   1. Access token got to be able to be given as an argument. When the access token is not given as the argument, `ScriptApp.getOAuthToken()` is used as the default access token. By this, the service account can be used.
 
+- v1.1.4 (June 5, 2024)
+
+  1. A bug for retrieving metadata from the shared drive was removed.
+
 [TOP](#top)

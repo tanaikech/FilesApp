@@ -91,7 +91,6 @@ function createTree(folderId, mimeType, fields, accessToken) {
       if (this.sharedDriveId) {
         query.corpora = "drive";
         query.driveId = this.sharedDriveId;
-        this.additionalQuery += "&corpora=drive&driveId=" + this.sharedDriveId;
       }
       return singleReq.call(this, query);
     };
@@ -111,7 +110,6 @@ function createTree(folderId, mimeType, fields, accessToken) {
       if (this.sharedDriveId) {
         query.corpora = "drive";
         query.driveId = this.sharedDriveId;
-        this.additionalQuery += "&corpora=drive&driveId=" + this.sharedDriveId;
       }
       allFolders = singleReq.call(this, query);
       return getAllFoldersInFolderMain.call(this, parent, idToName.call(this, parent, "name"), allFolders);
